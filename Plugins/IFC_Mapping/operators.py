@@ -104,7 +104,6 @@ class BulkAddPsets(bpy.types.Operator):
         selected_objects = context.selected_objects
         applicable_entities = self.getApplicableEntities(context)
 
-
         for object in selected_objects:
             props = object.BIMObjectProperties
             try:
@@ -115,7 +114,8 @@ class BulkAddPsets(bpy.types.Operator):
             object_ifc_class = data["type"]            
             ifc_definition_id = object.BIMObjectProperties.ifc_definition_id
 
-            if object_ifc_class in applicable_entities:
+            #there must be a better way of doing this?
+            if object_ifc_class in applicable_entities or "IfcObject" in applicable_entities:
                 run(
                 "pset.add_pset",
                 self.file,
