@@ -12,7 +12,7 @@ class AddPropertyToBeMapped(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        props = context.scene.propertiestobemapped
+        props = context.scene.properties_to_map
         props.add()
         return {"FINISHED"}
 
@@ -47,7 +47,7 @@ class ApplyMapping(bpy.types.Operator):
         return IfcStore.execute_ifc_operator(self, context)
 
     def _execute(self, context):
-        properties_to_map = context.scene.propertiestobemapped
+        properties_to_map = context.scene.properties_to_map
         ifc_file = IfcStore.get_file()
         allBuildingElements = ifc_file.by_type("IfcBuildingElement")
 
@@ -64,7 +64,7 @@ class ApplyMapping(bpy.types.Operator):
                     try:
                         for prop in property_set.HasProperties:
                             for property in properties_to_map:
-                                if not "." in properties_to_map.property_name:
+                                if not "." in property.property_name:
                                     self.report({'ERROR'}, f'Property: {prop.property_name} is missing Pset prefix')
                                     return
                                 if property.property_name.split(".")[0] != property_set.Name:

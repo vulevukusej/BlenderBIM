@@ -24,7 +24,7 @@ class IFCParameterMapping(bpy.types.Panel):
     def draw(self, context):
         layout = self.layout
         #object = context.object
-        props = context.scene.propertiestobemapped
+        props = context.scene.properties_to_map
 
         layout.operator("ifc_mapping.add_property_to_be_mapped")
         row = layout.row(align=True)
