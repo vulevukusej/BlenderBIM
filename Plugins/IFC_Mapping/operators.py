@@ -41,38 +41,38 @@ class ApplyMapping(bpy.types.Operator):
     bl_label = "Apply parameter mapping"
     bl_idname = "ifc_mapping.apply_mapping"
     bl_options = {"REGISTER", "UNDO"}
+    bl_description = "Rename paramters that are subclasses of IfcBuildingElement"
 
     def execute(self, context):
         return IfcStore.execute_ifc_operator(self, context)
 
     def _execute(self, context):
-        props = context.scene.propertiestobemapped
+        properties_to_map = context.scene.propertiestobemapped
         ifc_file = IfcStore.get_file()
         allBuildingElements = ifc_file.by_type("IfcBuildingElement")
 
-        self.apply_mapping(props, allBuildingElements)
+        self.apply_mapping(properties_to_map, allBuildingElements)
 
         self.report({'INFO'}, 'Finished applying changes')
         return {"FINISHED"}
 
-    def apply_mapping(self, props, allBuildingElements):
+    def apply_mapping(self, properties_to_map, allBuildingElements):
         for element in allBuildingElements:
-            ifc_definition_id = element.id()
             for definition in element.IsDefinedBy:
                 if definition.is_a('IfcRelDefinesByProperties'):
                     property_set = definition.RelatingPropertyDefinition
                     try:
-                        for property in property_set.HasProperties:
-                            for prop in props:
-                                if not "." in prop.property_name:
+                        for prop in property_set.HasProperties:
+                            for property in properties_to_map:
+                                if not "." in properties_to_map.property_name:
                                     self.report({'ERROR'}, f'Property: {prop.property_name} is missing Pset prefix')
                                     return
-                                if prop.property_name.split(".")[0] != property_set.Name:
+                                if property.property_name.split(".")[0] != property_set.Name:
                                     #Property name correct, but wrong pset
                                     continue
                                 if property.Name in prop.property_name:
-                                    property.Name = prop.new_property_name
-                                    Data.load(IfcStore.get_file(), ifc_definition_id)
+                                    prop.Name = property.new_property_name
+                                    Data.load(IfcStore.get_file(), element.id())
                     except:
                         #property has no .HasProperties value
                         #TODO - find out what this means

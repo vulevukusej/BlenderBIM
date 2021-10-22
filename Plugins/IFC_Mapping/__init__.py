@@ -41,11 +41,11 @@ def register():
     for cls in classes:
         register_class(cls)
 
-    bpy.types.Scene.propertiestobemapped = bpy.props.CollectionProperty(type=prop.PropertiesToBeMapped)
+    bpy.types.Scene.properties_to_map = bpy.props.CollectionProperty(type=prop.PropertiesToBeMapped)
 
 
 def unregister():
-    del bpy.types.Scene.propertiestobemapped
+    del bpy.types.Scene.properties_to_map
 
     from bpy.utils import unregister_class
     for cls in reversed(classes):
