@@ -26,7 +26,7 @@ bl_info = {
 }
 
 classes = (
-    prop.PropertiesToBeMapped, 
+    prop.PropertiesToMap, 
     ui.IFCPsetEditor, 
     ui.IFCParameterMapping, 
     ui.IFCBulkPropertyAdd, 
@@ -41,7 +41,7 @@ def register():
     for cls in classes:
         register_class(cls)
 
-    bpy.types.Scene.properties_to_map = bpy.props.CollectionProperty(type=prop.PropertiesToBeMapped)
+    bpy.types.Scene.properties_to_map = bpy.props.CollectionProperty(type=prop.PropertiesToMap)
 
 
 def unregister():
@@ -50,7 +50,4 @@ def unregister():
     from bpy.utils import unregister_class
     for cls in reversed(classes):
         unregister_class(cls)
-
-
-'''if __name__ == "__main__":
-    register()     '''   
+   

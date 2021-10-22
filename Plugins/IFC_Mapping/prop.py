@@ -12,7 +12,7 @@ from bpy.props import (
 )
 
 
-class PropertiesToBeMapped(PropertyGroup):
+class PropertiesToMap(PropertyGroup):
     property_name: StringProperty()
     new_property_name: StringProperty()
 

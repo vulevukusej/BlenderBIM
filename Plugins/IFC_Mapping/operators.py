@@ -23,7 +23,7 @@ class RemovePropertyToBeMapped(bpy.types.Operator):
     index: bpy.props.IntProperty()
 
     def execute(self, context):
-        props = context.scene.propertiestobemapped
+        props = context.scene.properties_to_map
         props.remove(self.index)
         return {"FINISHED"}
 
@@ -33,7 +33,7 @@ class ClearList(bpy.types.Operator):
     bl_options = {"REGISTER", "UNDO"}
 
     def execute(self, context):
-        props = context.scene.propertiestobemapped
+        props = context.scene.properties_to_map
         props.clear()
         return {"FINISHED"}
 
@@ -57,22 +57,27 @@ class ApplyMapping(bpy.types.Operator):
         return {"FINISHED"}
 
     def apply_mapping(self, properties_to_map, allBuildingElements):
+        
         for element in allBuildingElements:
             for definition in element.IsDefinedBy:
+                #print(definition)
                 if definition.is_a('IfcRelDefinesByProperties'):
                     property_set = definition.RelatingPropertyDefinition
                     try:
                         for prop in property_set.HasProperties:
-                            for property in properties_to_map:
-                                if not "." in property.property_name:
-                                    self.report({'ERROR'}, f'Property: {prop.property_name} is missing Pset prefix')
-                                    return
-                                if property.property_name.split(".")[0] != property_set.Name:
-                                    #Property name correct, but wrong pset
-                                    continue
-                                if property.Name in prop.property_name:
-                                    prop.Name = property.new_property_name
-                                    Data.load(IfcStore.get_file(), element.id())
+                                for property in properties_to_map:
+
+                                    if not "." in property.property_name:
+                                        self.report({'ERROR'}, f'Property: {property.property_name} is missing Pset prefix')
+                                        return
+
+                                    if property.property_name.split(".")[0] != property_set.Name:
+                                        #Property name correct, but wrong pset
+                                        continue
+
+                                    if property.property_name.split(".")[1] in prop.Name:
+                                        prop.Name = property.new_property_name
+                                        Data.load(IfcStore.get_file(), element.id())
                     except:
                         #property has no .HasProperties value
                         #TODO - find out what this means
