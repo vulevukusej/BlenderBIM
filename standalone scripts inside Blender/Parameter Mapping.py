@@ -15,7 +15,6 @@ mapping_table ={
 allBuildingElements = ifc_file.by_type("IfcBuildingElement")
 for element in allBuildingElements:
     
-    ifc_definition_id = element.id()
     for definition in element.IsDefinedBy:
         if definition.is_a('IfcRelDefinesByProperties'):
             property_set = definition.RelatingPropertyDefinition
@@ -27,7 +26,7 @@ for element in allBuildingElements:
                             Data.load(IfcStore.get_file(), element.id())
             except:
                 #property has no .HasProperties value
-                #TODO - find out what this means
+                #TODO - find out what this means, aka - when would a property not have this?
                 pass
 
 print("FINISHED")            
