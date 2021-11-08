@@ -9,10 +9,9 @@ ifc_file = ifcopenshell.open(filepath)
 templates = ifc_file.by_type("IfcPropertySetTemplate")
 for template in templates:
     applicable_entity = template.ApplicableEntity
-    print(applicable_entity.split(","))
+    #print(applicable_entity.split(","))
+    print(template.Description)
 
-    vukas = "Vukas"
-    print(vukas.split(","))
     #print(template.get_info)
     
 
