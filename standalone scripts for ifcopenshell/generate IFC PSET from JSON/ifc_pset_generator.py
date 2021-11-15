@@ -7,7 +7,7 @@ json_filepath = "C:/Users/vpaji/OneDrive/8. Porr/5. BlenderBIM/ParameterMapping/
 
 porr_json = open(json_filepath, encoding="utf-8")
 #return JSON object
-data = json.load(porr_json)
+data = (porr_json)
 
 row_index = 1
 

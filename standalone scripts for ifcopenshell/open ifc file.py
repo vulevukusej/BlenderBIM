@@ -12,13 +12,8 @@ for template in templates:
     #print(applicable_entity.split(","))
     print(template.Description)
 
-    #print(template.get_info)
-    
 
-"""for object in element:
-    print(type(object.GlobalId))
-    if object.GlobalId == "3bh96Fdg5ETg4ZzROUxK0m":
-        print ("found it")"""
+
 
 #print(element.__dict__.keys())
 """for element in ifcWall:

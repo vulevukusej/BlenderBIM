@@ -29,31 +29,24 @@ from collections import namedtuple
 
 try:  # python 3.3+
     from collections.abc import Iterable
-except ModuleNotFoundError:  # python 2
+except ImportError:  # python 2
     from collections import Iterable
 
 try:
-    from OCC.Core import TopoDS, gp, Quantity, BRepTools
+    from OCC.Core import V3d, TopoDS, gp, AIS, Quantity, BRepTools, Graphic3d
 
-    try:
-        from OCC.Core import V3d, AIS, Graphic3d
-    except ImportError:
-        pass
+    USE_OCCT_HANDLE = False
 except ImportError:
-    from OCC import TopoDS, gp, Quantity, BRepTools
+    from OCC import V3d, TopoDS, gp, AIS, Quantity, BRepTools, Graphic3d
 
-    try:
-        from OCC import V3d, AIS, Graphic3d
-    except ImportError:
-        pass
+    USE_OCCT_HANDLE = True
 
-shape_tuple = namedtuple("shape_tuple", ("data", "geometry", "styles"))
+shape_tuple = namedtuple("shape_tuple", ("data", "geometry", "styles", "style_ids"))
 
 handle, main_loop, add_menu, add_function_to_menu = None, None, None, None
 
 DEFAULT_STYLES = {
     "DEFAULT": (0.7, 0.7, 0.7),
-    "IfcWall": (0.8, 0.8, 0.8),
     "IfcSite": (0.75, 0.8, 0.65),
     "IfcSlab": (0.4, 0.4, 0.4),
     "IfcWallStandardCase": (0.9, 0.9, 0.9),
@@ -75,11 +68,11 @@ def initialize_display():
 
     def setup():
         viewer_handle = handle.GetViewer()
-        viewer = viewer_handle.GetObject()
+        viewer = viewer_handle.GetObject() if hasattr(viewer_handle, "GetObject") else viewer_handle
 
         def lights():
             viewer.InitActiveLights()
-            while True:
+            for _ in range(2):
                 try:
                     active_light = viewer.ActiveLight()
                 except BaseException:
@@ -91,10 +84,15 @@ def initialize_display():
         for l in lights:
             viewer.DelLight(l)
 
-        for dir in [(3, 2, 1), (-1, -2, -3)]:
+        if hasattr(V3d, "V3d_TypeOfOrientation_Yup_AxoRight"):
+            dirs = [[V3d.V3d_TypeOfOrientation_Yup_AxoRight], [V3d.V3d_TypeOfOrientation_Zup_AxoRight]]
+        else:
+            dirs = [(3, 2, 1), (-1, -2, -3)]
+
+        for dir in dirs:
             light = V3d.V3d_DirectionalLight(viewer_handle)
             light.SetDirection(*dir)
-            viewer.SetLightOn(light.GetHandle())
+            viewer.SetLightOn(light.GetHandle() if USE_OCCT_HANDLE else light)
 
     setup()
     return handle
@@ -117,7 +115,6 @@ def display_shape(shape, clr=None, viewer_handle=None):
         representation = None
 
     material = Graphic3d.Graphic3d_MaterialAspect(Graphic3d.Graphic3d_NOM_PLASTER)
-    material.SetDiffuse(1)
 
     if representation and not clr:
         if len(set(representation.styles)) == 1:
@@ -195,7 +192,7 @@ def display_shape(shape, clr=None, viewer_handle=None):
         clr = Quantity.Quantity_Color(r(), r(), r(), Quantity.Quantity_TOC_RGB)
         ais.SetColor(clr)
 
-    ais_handle = ais.GetHandle()
+    ais_handle = ais.GetHandle() if USE_OCCT_HANDLE else ais
     viewer_handle.Context.Display(ais_handle, False)
 
     return ais_handle
@@ -219,16 +216,18 @@ def serialize_shape(shape):
 
 
 def create_shape_from_serialization(brep_object):
-    brep_data, occ_shape, styles = None, None, ()
+    brep_data, occ_shape, styles, style_ids = None, None, (), ()
 
     is_product_shape = True
     try:
         brep_data = brep_object.geometry.brep_data
         styles = brep_object.geometry.surface_styles
+        style_ids = brep_object.geometry.surface_style_ids
     except BaseException:
         try:
             brep_data = brep_object.brep_data
             styles = brep_object.surface_styles
+            style_ids = brep_object.surface_style_ids
             is_product_shape = False
         except BaseException:
             pass
@@ -236,7 +235,7 @@ def create_shape_from_serialization(brep_object):
     styles = tuple(styles[i : i + 4] for i in range(0, len(styles), 4))
 
     if not brep_data:
-        return shape_tuple(brep_object, None, styles)
+        return shape_tuple(brep_object, None, styles, style_ids)
 
     try:
         ss = BRepTools.BRepTools_ShapeSet()
@@ -246,6 +245,6 @@ def create_shape_from_serialization(brep_object):
         pass
 
     if is_product_shape:
-        return shape_tuple(brep_object, occ_shape, styles)
+        return shape_tuple(brep_object, occ_shape, styles, style_ids)
     else:
         return occ_shape
