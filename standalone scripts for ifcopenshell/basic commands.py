@@ -1,26 +1,29 @@
 import ifcopenshell
 
-filepath = "C:/Users/vpaji/OneDrive/Documents/Blender/Test Projects/test.ifc"
+filepath = "C:/Users/vpaji/OneDrive/Documents/Blender/Test Projects/17-Brita CT1_Taunusstein-V7_Optimized.ifc"
 ifc = ifcopenshell.open(filepath)
 
 # retrieve all objects that are part of IfcBuildingElement
 building_elements = ifc.by_type("IfcBuildingElement")
 
-# print class type for each object
-for object in building_elements:
-    print(object.is_a())
+# # print class type for each object
+# for object in building_elements:
+#     print(object.is_a())
 
 # print number of objects that inherit from IfcColumn
 columns = ifc.by_type('IfcColumn')
 print(len(columns))
 
-# access specific element attributes
-print(columns[0].GlobalId)
-print(columns[0].Name)
-print(columns[0].id()) # STEP ID
+# # access specific element attributes
+# print(columns[0].GlobalId)
+# print(columns[0].Name)
+# print(columns[0].id()) # STEP ID
 
-# # get Psets for a particular element
-# print(ifcopenshell.util.element.get_psets(columns[0]))
+# get Psets for a particular element
+psets = ifcopenshell.util.element.get_psets(columns[0])
+base_quantities = psets["BaseQuantities"]
+print(base_quantities["GrossVolume"])
+
 
 # # find inverse attributes
 # print(columns[0].IsDefinedBy)
