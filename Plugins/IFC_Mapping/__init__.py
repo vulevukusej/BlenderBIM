@@ -26,15 +26,17 @@ bl_info = {
 }
 
 classes = (
-    prop.PropertiesToMap, 
-    ui.IFCPsetEditor, 
-    ui.IFCParameterMapping, 
-    ui.IFCBulkPropertyAdd, 
+    prop.PropertiesToMap,
+    prop.PropertiesToAddOrEdit,
+    ui.IfcPropertyEditor, 
+    ui.RenameParameters,
+    ui.AddPropertiesOrEditValues,
     operators.AddPropertyToBeMapped,
     operators.RemovePropertyToBeMapped,
     operators.ClearList,
     operators.ApplyMapping,
-    operators.BulkAddPsets)
+    operators.AddEditCustomProperty
+    )
 
 def register():
     from bpy.utils import register_class
@@ -42,10 +44,12 @@ def register():
         register_class(cls)
 
     bpy.types.Scene.properties_to_map = bpy.props.CollectionProperty(type=prop.PropertiesToMap)
+    bpy.types.Scene.properties_to_add_or_edit = bpy.props.CollectionProperty(type=prop.PropertiesToAddOrEdit)
 
 
 def unregister():
     del bpy.types.Scene.properties_to_map
+    del bpy.types.Scene.properties_to_add_or_edit
 
     from bpy.utils import unregister_class
     for cls in reversed(classes):

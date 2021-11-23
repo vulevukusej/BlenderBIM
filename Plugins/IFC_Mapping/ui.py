@@ -1,9 +1,8 @@
 import bpy
-from blenderbim.bim.module.pset_template.prop import getPsetTemplates
 
-class IFCPsetEditor(bpy.types.Panel):
+class IfcPropertyEditor(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
-    bl_label = "IFC Pset Editor"
+    bl_label = "IFC Property Editor"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "object"
@@ -11,61 +10,85 @@ class IFCPsetEditor(bpy.types.Panel):
     def draw(self, context):
         pass
 
-class IFCParameterMapping(bpy.types.Panel):
+class RenameParameters(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
-    bl_label = "Rename existing parameters"
+    bl_label = "Rename all building elements"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "object"
-    bl_parent_id = "IFCPsetEditor"
+    bl_parent_id = "IfcPropertyEditor"
     bl_options = {"DEFAULT_CLOSED"}
     bl_order = 0
-
+    
     def draw(self, context):
         layout = self.layout
-        #object = context.object
         props = context.scene.properties_to_map
-
-        layout.operator("ifc_mapping.add_property_to_be_mapped")
-        row = layout.row(align=True)
-
-        if props:
-            row.label(text="Existing property name: (PsetName.Property)")
-            row.label(text="New property name:")
+  
+        if props:          
             for index, property in enumerate(props):
                 row = layout.row()
-                row.operator("ifc_mapping.remove_property_to_be_mapped",icon="PANEL_CLOSE", text="").index = index
-                row.prop(property, "property_name", text="")
+                row.prop(property, "pset_name", text="")
+                row.prop(property, "existing_property_name", text="")
                 row.prop(property, "new_property_name", text="")
-                #row.operator("bim.remove_csv_attribute", icon="X", text="").index = index        
+                op = row.operator("ifc_mapping.remove_property_to_be_mapped",icon="PANEL_CLOSE", text="")
+                op.index = index
+                op.type = "properties_to_map"
+                
+        row = layout.row()
+        row.label()
+        op = row.operator("ifc_mapping.add_property_to_be_mapped", icon="ADD",text="")
+        op.type = "properties_to_map"
+        
+        if props:  
             row = layout.row()
-            row.operator("ifc_mapping.clear_list")
+            clear = row.operator("ifc_mapping.clear_list")
+            clear.type = "properties_to_map"
             row.operator("ifc_mapping.apply_mapping")
 
-class IFCBulkPropertyAdd(bpy.types.Panel):
+
+class AddPropertiesOrEditValues(bpy.types.Panel):
     """Creates a Panel in the Object properties window"""
-    bl_label = "Add Psets to selected objects"
+    bl_label = "Add/Edit Custom Properties and Values (to selected objects)"
     bl_space_type = 'PROPERTIES'
     bl_region_type = 'WINDOW'
     bl_context = "object"
-    bl_parent_id = "IFCPsetEditor"
-    bl_options = {"DEFAULT_CLOSED", "DRAW_BOX"}
+    bl_parent_id = "IfcPropertyEditor"
+    bl_options = {"DEFAULT_CLOSED"}
     bl_order = 1
 
     def draw(self, context):
-        props = context.scene.BIMPsetTemplateProperties
         layout = self.layout
-        layout.prop(props, "pset_template_files", text="")
-        layout.prop(props, "pset_templates", text="", icon="COPY_ID")
+        props = context.scene.properties_to_add_or_edit 
         
-        row = self.layout.row(align=True)
-        op = row.operator("ifc_mapping.add_pset_to_selected", icon="ADD")
-        op.pset = self.getPsetName(context, props.pset_templates)
+        if props:
+            for index, property in enumerate(props):
+                    row = layout.row()
+                    row.prop(property, "pset_name", text="")
+                    row.prop(property, "property_name", text="")
+                    if property.value_type == "String":
+                        row.prop(property, "string_value", text="")
+                    elif property.value_type == "Boolean":
+                        row.prop(property, "bool_value", text="")
+                    elif property.value_type == "Integer":
+                        row.prop(property, "int_value", text="")
+                    elif property.value_type == "Number":
+                        row.prop(property, "float_value", text="")
+                    row.prop(property, "value_type", text="")
+                    op = row.operator("ifc_mapping.remove_property_to_be_mapped",icon="PANEL_CLOSE", text="")
+                    op.index = index
+                    op.type = "properties_to_add_or_edit"
         
-    def getPsetName(self, context, pset_id):
-        pset_enum = [pset_tuple for pset_tuple in getPsetTemplates(self,context)]
-        for pset in pset_enum:
-            if pset[0] == pset_id:
-                return pset[1]
+        row = layout.row()
+        row.label()
+        op = row.operator("ifc_mapping.add_property_to_be_mapped", icon="ADD",text="")
+        op.type = "properties_to_add_or_edit"
+        
+        if props:
+            row = layout.row()
+            clear = row.operator("ifc_mapping.clear_list")
+            clear.type = "properties_to_add_or_edit"
+            op = row.operator("ifc_mapping.add_edit_custom_property",icon="ADD", text="Apply Changes")
+            op.index = index
+        
 
         
