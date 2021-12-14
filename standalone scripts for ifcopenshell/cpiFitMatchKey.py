@@ -5,7 +5,7 @@ from ifcopenshell.api.pset.data import Data
 from blenderbim.bim.ifc import IfcStore
 import json
 
-filepath = "C:/Users/vpaji/OneDrive/Documents/Blender/Test Projects/itwo.ifc"
+#filepath = "C:/Users/vpaji/OneDrive/Documents/Blender/Test Projects/itwo.ifc"
 json_filepath = "C:/Users/vpaji/OneDrive/1. Professional/10. Programming/Python/XML parsing/porr_template.json"
 
 #ifc = ifcopenshell.open(filepath)

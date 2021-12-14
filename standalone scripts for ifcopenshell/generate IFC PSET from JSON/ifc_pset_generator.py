@@ -2,7 +2,7 @@ import ifc_uuid
 import json
 
 ifc_filepath = "C:/Users/vpaji/AppData/Roaming/Blender Foundation/Blender/2.93/scripts/addons/blenderbim/bim/data/pset/porr.ifc"
-json_filepath = "C:/Users/vpaji/OneDrive/8. Porr/5. BlenderBIM/ParameterMapping/PORR Parameter/complete_translation.json"
+json_filepath = "C:/Users/vpaji/OneDrive/1. Professional/9. Porr/PORR Parameter/complete_translation.json"
 
 
 porr_json = open(json_filepath, encoding="utf-8")

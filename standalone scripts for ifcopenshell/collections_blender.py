@@ -3,36 +3,35 @@ import ifcopenshell
 import blenderbim.tool as tool
 import ifcopenshell.util.element
 
+    
+    
 
+       
 pset = "Pset_Custom"
 prop = "Bauteilkategorie"
 
-if "Selection Sets" in bpy.data.collections:
-    selection_sets = bpy.data.collections["Selection Sets"]  
-else:
-    selection_sets = bpy.data.collections.new("Selection Sets")
-    selection_sets.color_tag = "COLOR_03"
+ss = bpy.data.collections.get("Selection Sets")
+if ss is None:
+    ss = bpy.data.collections.new("Selection Sets")
+    ss.color_tag = "COLOR_04"
    
-   #ifctype 
-if "Ifc Types" in bpy.data.collections:
-    ifc_types = bpy.data.collections["Ifc Types"]
-else:
+#ifctype 
+ifc_types = bpy.data.collections.get("Ifc Types")
+if ifc_types is None:
     ifc_types = bpy.data.collections.new("Ifc Types")
     ifc_types.color_tag = "COLOR_03"
-    selection_sets.children.link(ifc_types)
+    ss.children.link(ifc_types)
     
-    #bauteilkategorie
-if "Bauteilkategorie" in bpy.data.collections:
-    bauteilkategorie = bpy.data.collections["Bauteilkategorie"]
-else:
+#bauteilkategorie
+bauteilkategorie = bpy.data.collections.get("Bauteilkategorie")
+if bauteilkategorie is None:
     bauteilkategorie = bpy.data.collections.new("Bauteilkategorie")
     bauteilkategorie.color_tag = "COLOR_03"
-    selection_sets.children.link(bauteilkategorie)    
+    ss.children.link(bauteilkategorie)    
 
 try:#Try to link the collection to the scene, do nothing if already linked
-    bpy.context.scene.collection.children.link(selection_sets)
-    bpy.context.scene.collection.children.link(selection_sets)
-except:
+    bpy.context.scene.collection.children.link(ss)
+except RuntimeError:
     pass
     
 objects = bpy.context.selectable_objects

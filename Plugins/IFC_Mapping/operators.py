@@ -65,7 +65,7 @@ class ApplyMapping(bpy.types.Operator):
         return IfcStore.execute_ifc_operator(self, context)
 
     def _execute(self, context):
-        properties_to_map = context.scene.properties_to_map
+        props_to_map = context.scene.properties_to_map
         ifc_file = IfcStore.get_file()
         all_building_elements = ifc_file.by_type("IfcBuildingElement")
 
@@ -75,15 +75,15 @@ class ApplyMapping(bpy.types.Operator):
                     prop_set = definition.RelatingPropertyDefinition
 
                     if hasattr(prop_set, "HasProperties"):
-                        self.rename(prop_set, prop_set.HasProperties, properties_to_map, element)
+                        self.rename_property(prop_set, props_to_map, element)
                     elif hasattr(prop_set, "Quantities"):
-                        self.rename(prop_set, prop_set.Quantities, properties_to_map, element)
+                        self.rename_property(prop_set, props_to_map, element)
 
         self.report({'INFO'}, 'Finished applying changes')
         return {"FINISHED"}
                                     
-    def rename(self, property_set, obj_props, properties_to_map, element):
-        for obj_prop in obj_props:
+    def rename_property(self, property_set, properties_to_map, element):
+        for obj_prop in property_set.HasProperties:
             for prop2map in properties_to_map:
                 if not prop2map.pset_name:
                     self.report({'ERROR'}, f'Missing PSET!')
@@ -108,7 +108,7 @@ class AddEditCustomProperty(bpy.types.Operator):
     def _execute(self, context):
         self.file = IfcStore.get_file()
         selected_objects = context.selected_objects
-        props = context.scene.properties_to_add_or_edit     
+        props = context.scene.PropertiesToAddOrEdit     
 
         for object in selected_objects:
             ifc_definition_id = object.BIMObjectProperties.ifc_definition_id
