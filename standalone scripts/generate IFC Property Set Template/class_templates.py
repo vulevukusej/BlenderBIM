@@ -82,7 +82,9 @@ class IfcPropertyEnumeration:
     def get_step_object(self):
         assert self.enumeration_values, 'The enumeration should have defined enumeration values!'
         return f"#{self.step_id}= IFCPROPERTYENUMERATION('{self.name}',({self.set_to_string(self.enumeration_values)}),{self.unit});\n" 
-    
+
+
+#the following are just some tests to check the classes work.  Should probably make these proper tests
 custom_pset = IfcPropertySetTemplate("custom_pset","an example custom pset", ".PSET_TYPEDRIVENOVERRIDE.")
 custom_pset.assign_step_id(1)
 custom_pset.add_applicable_entity({"IfcWall","IfcStandardCase"})
