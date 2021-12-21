@@ -3,7 +3,7 @@ import ifc_uuid
 class IfcRoot:
     def __init__(self, name, description):
         self.global_id = ifc_uuid.new()
-        self.owner_history = ''
+        self.owner_history = '$'
         self.name = name
         self.description = description
 
@@ -26,7 +26,7 @@ class IfcPropertySetTemplate(IfcRoot):
         
     def get_step_object(self):
         assert self.has_property_templates, 'The property set should have defined property templates!'
-        return f"#{self.step_id}= IFCPROPERTYSETTEMPLATE('{self.global_id}','{self.owner_history}','{self.name}','{self.description}',{self.template_type},'{self.set_to_string(self.applicable_entity)}',({self.set_to_string(self.has_property_templates)}));\n"
+        return f"#{self.step_id}= IFCPROPERTYSETTEMPLATE('{self.global_id}',{self.owner_history},'{self.name}','{self.description}',{self.template_type},'{self.set_to_string(self.applicable_entity)}',({self.set_to_string(self.has_property_templates)}));\n"
 
     def set_to_string(self, set):
         list_of_strings = [str(s) for s in set]
@@ -39,11 +39,11 @@ class IfcSimplePropertyTemplate(IfcRoot):
         super().__init__(name, description)
         self.template_type = template_type
         self.primary_measure_type = primary_measure_type
-        self.secondary_measure_type = ''
-        self.enumerators = ''
-        self.primary_unit = ''
-        self.secondary_unit = ''
-        self.expression = ''
+        self.secondary_measure_type = '$'
+        self.enumerators = '$'
+        self.primary_unit = '$'
+        self.secondary_unit = '$'
+        self.expression = '$'
         self.access_state = ".READWRITE."
         
     def assign_step_id(self, step_id):
@@ -53,8 +53,9 @@ class IfcSimplePropertyTemplate(IfcRoot):
         self.enumerators = f"#{enumerator}"
         
     def get_step_object(self):
-        assert self.enumerators, 'The property template should have an assigned enumerator!'
-        return f"#{self.step_id}= IFCSIMPLEPROPERTYTEMPLATE('{self.global_id}','{self.owner_history}','{self.name}','{self.description}',{self.template_type},'{self.primary_measure_type}','{self.secondary_measure_type}',{self.enumerators},'{self.primary_unit}','{self.secondary_unit}','{self.expression}',{self.access_state});\n"
+        if self.template_type == ".P_ENUMERATEDVALUE.":
+            assert self.enumerators , f'The #{self.step_id} property template should have an assigned enumerator!'
+        return f"#{self.step_id}= IFCSIMPLEPROPERTYTEMPLATE('{self.global_id}',{self.owner_history},'{self.name}','{self.description}',{self.template_type},'{self.primary_measure_type}',{self.secondary_measure_type},{self.enumerators},{self.primary_unit},{self.secondary_unit},{self.expression},{self.access_state});\n"
 
     def set_to_string(self, set):
         list_of_strings = [str(s) for s in set]
@@ -63,7 +64,7 @@ class IfcSimplePropertyTemplate(IfcRoot):
 
 
 class IfcPropertyEnumeration:
-    def __init__(self, name, unit=''):
+    def __init__(self, name, unit='$'):
         self.name = name
         self.unit = unit
         self.enumeration_values = set()

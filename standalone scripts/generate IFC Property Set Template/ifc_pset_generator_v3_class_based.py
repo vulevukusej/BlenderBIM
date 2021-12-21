@@ -60,10 +60,11 @@ for typ in template:
         #loop through all parameters
         for parameter in bauteil["parameters"]:
             prop_name = parameter["revitname"]
-            if prop_name == "ri:Ignore":
+            revit_parameter_type = parameter["parametertype"]
+            prop_description = parameter["name"].replace("'", "&apos")
+            if "ri:" in prop_name:
                 continue
-            prop_description = parameter["name"]
-            if len(parameter["values"]) < 2:
+            if len(parameter["values"]) < 1 or revit_parameter_type == "YesNo":
                 template_type = ".P_SINGLEVALUE."
             else:
                 template_type = ".P_ENUMERATEDVALUE."
@@ -79,7 +80,12 @@ for typ in template:
             
             if template_type == ".P_ENUMERATEDVALUE.":
                 py_type = revit_py_type_mapping[revit_parameter_type]
-                enum_values = {f"{primary_measure_type}({py_type(v['value'])})" for v in parameter["values"]} 
+                
+                #There must be a better way of doing this???
+                if primary_measure_type in ["IfcReal", "IfcInteger"]:
+                    enum_values = {f"{primary_measure_type}({py_type(v['value'])})" for v in parameter["values"]}
+                else:
+                    enum_values = {f"{primary_measure_type}('{py_type(v['value'])}')" for v in parameter["values"]}
                 
                 #instantatiate an IfcPropertyEnumeration class
                 prop_enum = ifc_body[step_id] = IfcPropertyEnumeration(prop_name)
@@ -105,32 +111,43 @@ for i in ifc_body.values():
 
 #ugly code, but necessary(?) since ifc doesn't adopt UTF8 yet
 #see: https://technical.buildingsmart.org/resources/ifcimplementationguidance/string-encoding/
-ifc_body_string = ifc_body_string.replace("Ä","\\X2\\00C4\\X0\\")
-ifc_body_string = ifc_body_string.replace("ä","\\X2\\00E4\\X0\\")
-ifc_body_string = ifc_body_string.replace("Ü","\\X2\\00DC\\X0\\")
-ifc_body_string = ifc_body_string.replace("ü","\\X2\\00FC\\X0\\")
-ifc_body_string = ifc_body_string.replace("Ö","\\X2\\00D6\\X0\\")
-ifc_body_string = ifc_body_string.replace("ö","\\X2\\00F6\\X0\\")
-ifc_body_string = ifc_body_string.replace("ß","\\X2\\00DF\\X0\\")
+# ifc_body_formatted = ifc_body_string.replace("Ä","\\X2\\00C4\\X0\\")
+# ifc_body_formatted = ifc_body_formatted.replace("ä","\\X2\\00E4\\X0\\")
+# ifc_body_formatted = ifc_body_formatted.replace("Ü","\\X2\\00DC\\X0\\")
+# ifc_body_formatted = ifc_body_formatted.replace("ü","\\X2\\00FC\\X0\\")
+# ifc_body_formatted = ifc_body_formatted.replace("Ö","\\X2\\00D6\\X0\\")
+# ifc_body_formatted = ifc_body_formatted.replace("ö","\\X2\\00F6\\X0\\")
+# ifc_body_formatted = ifc_body_formatted.replace("ß","\\X2\\00DF\\X0\\")
+# #fringe case
+# ifc_body_formatted = ifc_body_formatted.replace('\"tellern\"','&quot;')
 
-# ifc_body_formatted = ifc_body.replace("Ä","AE")
-# ifc_body_formatted = ifc_body_formatted.replace("ä","ae")
-# ifc_body_formatted = ifc_body_formatted.replace("Ü","UE")
-# ifc_body_formatted = ifc_body_formatted.replace("ü","ue")
-# ifc_body_formatted = ifc_body_formatted.replace("Ö","OE")
-# ifc_body_formatted = ifc_body_formatted.replace("ö","oe")
-# ifc_body_formatted = ifc_body_formatted.replace("ß","ss")
-# ifc_body_formatted = ifc_body_formatted.replace("'delete'","")
-#ifc_body_formatted = ifc_body.encode("iso-8859-1")
+
+ifc_body_formatted = ifc_body_string.replace("Ä","AE")
+ifc_body_formatted = ifc_body_formatted.replace("ä","ae")
+ifc_body_formatted = ifc_body_formatted.replace("Ü","UE")
+ifc_body_formatted = ifc_body_formatted.replace("ü","ue")
+ifc_body_formatted = ifc_body_formatted.replace("Ö","OE")
+ifc_body_formatted = ifc_body_formatted.replace("ö","oe")
+ifc_body_formatted = ifc_body_formatted.replace("ß","ss")
+ifc_body_formatted = ifc_body_formatted.replace("'delete'","")
+#fringe case
+ifc_body_formatted = ifc_body_formatted.replace('\"tellern\"','&quot;')
+
+#ifc_body_formatted = ifc_body.encode("iso-8859-1")   This doesn't work, keeping the comment here to remind myself
+#to look into this again in future
+
 
 ifc_footer = """ 
 ENDSEC;
 END-ISO-10303-21;"""
 
-f = open(ifc_filepath, "w")
-f.write(ifc_header+ifc_body_string+ifc_footer)
-f.close()
+with open(ifc_filepath, "w", encoding="utf-8") as f:
+    f.write(ifc_header+ifc_body_formatted+ifc_footer)
+    f.close()
 print("finished")
 
 # Closing file
 porr_json.close()
+
+
+[i.primary_measure_type for i in ifc_body.values() if isinstance(i, IfcSimplePropertyTemplate) and i.template_type==".P_ENUMERATEDVALUE." and i.primary_measure_type != "IfcLabel"]
