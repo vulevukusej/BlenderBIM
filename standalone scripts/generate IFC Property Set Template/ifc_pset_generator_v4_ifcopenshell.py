@@ -1,6 +1,7 @@
 import ifcopenshell
 import json
 from applicable_classes import applicable_classes
+from api_request import get_blender_content
 
 #mapping dictionary to convert revit data types to ifc data types
 revit_ifc_type_mapping = {
@@ -20,12 +21,13 @@ revit_py_type_mapping = {
 
 #I should change these filepaths to relative file paths or integrate into Blender Plugin
 ifc_filepath = "C:/Users/vpaji/AppData/Roaming/Blender Foundation/Blender/3.0/scripts/addons/blenderbim/bim/data/pset/porr.ifc"
-json_filepath = "C:/Users/vpaji/OneDrive/1. Professional/9. Porr/PORR Parameter/parameters_template.json "
+#json_filepath = "C:/Users/vpaji/OneDrive/1. Professional/9. Porr/PORR Parameter/parameters_template.json "
+porr_json = get_blender_content()
 
-porr_json = open(json_filepath, encoding="utf-8")
+#porr_json = open(json_filepath, encoding="utf-8")
 
 #return JSON object
-template = json.load(porr_json)
+template = json.loads(porr_json)
 
 #create an empty ifc file
 ifc = ifcopenshell.file()
@@ -96,7 +98,7 @@ for typ in template:
                 prop_template.Enumerators = prop_enum
  
 # Closing json file
-porr_json.close()
+# porr_json.close()
 
 #write ifc file
 ifc.write(ifc_filepath)
